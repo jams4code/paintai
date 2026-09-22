@@ -3,7 +3,7 @@
 Local-first agent-driven canvas. Annotate real screenshots, build mockups, draw
 diagrams, and let a coding agent read and write the same canvas you are drawing on.
 
-Status: planning. Nothing built yet.
+Status: Phase 0 done. Public at https://github.com/jams4code/paintai
 Owner: Jamal Abdelkhalek
 Created: 2026-09-22
 Origin: Teams thread, "Maybe we should build PaintAI", 2026-09-22 14:39
@@ -44,7 +44,7 @@ arrange elements at machine speed.
 | AI element scope | Native vector, icon placement, layout intelligence  | No image generation in v1. No GPU, no API key, no per-call cost.                                                                                                      |
 | Shell            | Tauri v2                                            | Small binary, native file access, Rust backend available when needed.                                                                                                 |
 | Raster ops       | Crop, redact-blur, scaled export. Three operations. | Enough for the screenshot workflow. Explicitly not a pixel engine.                                                                                                    |
-| Licensing        | Open core, MIT core                                 | GitHub is the top of funnel. Paid tier deferred until there are users.                                                                                                |
+| Licensing        | MIT, personal open source                           | Settled 2026-09-22. Not a JADEV product. No paid tier, no open core split, no dual licensing. One license, one repo.                                                  |
 
 ### Non-goals (v1)
 
@@ -395,8 +395,28 @@ Not now. Revisit when there are real users.
 - Image generation
 - Cross-platform builds beyond Windows
 
-## 8. Open question
+## 8. Settled: personal open source [2026-09-22]
 
-Is this a JADEV product or an open-source project that happens to be yours? It
-affects the repo home, the README voice, and whether the paid tier gets designed
-in or bolted on. Not blocking for Phase 0 through 3. Blocking before any public push.
+Not a JADEV product. MIT, public from Phase 0, at
+https://github.com/jams4code/paintai under the personal account.
+
+What that decision closes:
+
+- No paid tier and no open core split. The whole thing is MIT. If a commercial question comes back later it will be a separate conversation about a separate artefact, not a feature held back from this repo.
+- README voice is first person and honest about how early it is, rather than corporate.
+- Contribution bar is set for strangers, not colleagues. That is why CONTRIBUTING.md spells out the MSVC linker trap and why the non-goals are written where a drive-by contributor will actually read them.
+
+### Repository guardrails, live
+
+- Branch protection on `main`: pull request required, linear history, no force push, no deletion, conversation resolution required. Admin bypass left on, because a solo maintainer who cannot push to their own repo stops shipping.
+- Secret scanning with push protection, Dependabot alerts and automatic security PRs, private vulnerability reporting.
+- CI on every push and PR: Prettier, ESLint, TypeScript, Vitest, plus `cargo fmt`, Clippy with warnings as errors, and a Rust build across Windows, macOS and Linux.
+- Security workflow: `pnpm audit`, `cargo audit`, Gitleaks over full history, dependency review on PRs. Weekly schedule as well as on push, because advisories land after you merge, not before.
+- CodeQL on JavaScript, TypeScript and Actions. It has no stable Rust support, so Rust leans on Clippy and `cargo audit` instead.
+- Release workflow on `v*` tags, building installers for Windows, macOS on both architectures, and Linux, plus a portable `PaintAI-portable.exe`.
+
+### Still to do on the repo
+
+- Add required status checks to branch protection. Deliberately left off until CI has run green once, because naming a check that does not exist yet blocks every PR.
+- Seed `good first issue` items for Phase 1. Labels exist, issues do not.
+- macOS and Windows code signing. Unsigned builds will warn users. Not worth the certificate cost until someone is actually downloading.
