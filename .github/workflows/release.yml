@@ -91,7 +91,7 @@ jobs:
             OS will warn you. Nothing is verified by a human yet.
 
             See the commit log for what changed.
-          releaseDraft: true
+          releaseDraft: false
           prerelease: true
           args: ${{ matrix.args }}
 
