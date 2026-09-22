@@ -200,6 +200,47 @@ Verify: paste a screenshot, draw an arrow, add a text label, hit copy-to-clipboa
 
 **Ship this.** It is independently useful and it validates the shell before any agent work.
 
+#### Built [2026-09-23]
+
+Deviation worth recording: this phase was supposed to need zero Rust. It needed
+about seventy lines. Reading and writing arbitrary user-chosen paths through the
+`fs` plugin means widening its scope, and `SECURITY.md` promises the filesystem
+surface stays narrow. Two explicit commands that canonicalise the path, reject
+anything that is not a regular file, and cap the size are smaller and far easier
+to audit than a scope rule. `tauri-plugin-fs` was dropped again as a result.
+
+| Area                           | File                          |
+| ------------------------------ | ----------------------------- |
+| Placement policy, pure, tested | `src/lib/placement.ts`        |
+| Image insertion into the scene | `src/lib/image-insert.ts`     |
+| Filesystem and dialogs         | `src/lib/files.ts`            |
+| PNG export and clipboard       | `src/lib/export.ts`           |
+| Scene open and save            | `src/lib/scene-io.ts`         |
+| Frameless chrome and toolbar   | `src/components/TitleBar.tsx` |
+| Wiring, shortcuts, paste, drop | `src/App.tsx`                 |
+| Rust file commands             | `src-tauri/src/lib.rs`        |
+
+Shortcuts: `Ctrl+Shift+C` copy, `Ctrl+S` save, `Ctrl+O` open scene, `Ctrl+E`
+export, `Ctrl+I` place image. Registered in the capture phase so Excalidraw's own
+bindings do not swallow them.
+
+Paste and drop are intercepted in the capture phase rather than left to
+Excalidraw, so incoming images run through `resolveImagePlacement`. Anything that
+is not an image falls through untouched, so pasting text or Excalidraw elements
+still behaves normally.
+
+Verified: `pnpm validate` green, 9 placement tests pass, Vite builds, Clippy
+clean, and the app launches with the canvas and custom titlebar rendering.
+
+Open decision, deliberately left to the owner: `resolveImagePlacement` currently
+implements fit-viewport, keep existing content, lock the image. The two
+alternatives and their trade-offs are written out in the function's doc comment.
+Whichever is chosen, `placement.test.ts` is where the policy assertions live.
+
+Not done in this phase, moved out honestly: the export scale selector covers
+1x/2x/3x but there is no "export selection only" toggle, the dirty flag never
+prompts on close, and there is no recent-files list.
+
 ---
 
 ### Phase 2: scene-ops, the domain core (week 2)
