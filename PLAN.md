@@ -417,6 +417,6 @@ What that decision closes:
 
 ### Still to do on the repo
 
-- Add required status checks to branch protection. Deliberately left off until CI has run green once, because naming a check that does not exist yet blocks every PR.
+- ~~Add required status checks to branch protection.~~ Done once CI ran green: all four CI jobs plus the three security jobs are now required, with strict mode on.
 - Seed `good first issue` items for Phase 1. Labels exist, issues do not.
 - macOS and Windows code signing. Unsigned builds will warn users. Not worth the certificate cost until someone is actually downloading.
