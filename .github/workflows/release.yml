@@ -1,0 +1,115 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Tag to build and publish (e.g. v0.1.0)'
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build ${{ matrix.label }}
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            label: Windows x64
+            args: ''
+          - os: macos-latest
+            label: macOS Apple Silicon
+            args: '--target aarch64-apple-darwin'
+          - os: macos-latest
+            label: macOS Intel
+            args: '--target x86_64-apple-darwin'
+          - os: ubuntu-22.04
+            label: Linux x64
+            args: ''
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Linux system dependencies
+        if: matrix.os == 'ubuntu-22.04'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y \
+            libwebkit2gtk-4.1-dev \
+            libappindicator3-dev \
+            librsvg2-dev \
+            patchelf \
+            build-essential \
+            libxdo-dev \
+            libssl-dev \
+            libayatana-appindicator3-dev
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 9
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.os == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: apps/desktop/src-tauri
+
+      - name: Install
+        run: pnpm install --frozen-lockfile
+
+      - name: Build and publish
+        uses: tauri-apps/tauri-action@v0
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          projectPath: apps/desktop
+          tagName: ${{ github.event.inputs.tag || github.ref_name }}
+          releaseName: 'PaintAI ${{ github.event.inputs.tag || github.ref_name }}'
+          releaseBody: |
+            Download the installer for your platform below.
+
+            **Windows:** take the `.exe` installer, or `PaintAI-portable.exe`
+            if you would rather run it without installing. Both need Microsoft
+            Edge WebView2, which ships with Windows 11 and updated Windows 10.
+
+            **macOS and Linux:** built by CI and not signed or notarised. Your
+            OS will warn you. Nothing is verified by a human yet.
+
+            See the commit log for what changed.
+          releaseDraft: true
+          prerelease: true
+          args: ${{ matrix.args }}
+
+      # Tauri ships an installer. People also want the bare executable they can
+      # drop on a USB stick and run, so publish that too.
+      - name: Attach portable Windows executable
+        if: matrix.os == 'windows-latest'
+        shell: bash
+        run: |
+          set -euo pipefail
+          SRC="apps/desktop/src-tauri/target/release/paintai-desktop.exe"
+          if [ ! -f "$SRC" ]; then
+            echo "portable exe not found at $SRC" >&2
+            ls -la apps/desktop/src-tauri/target/release/ || true
+            exit 1
+          fi
+          cp "$SRC" "PaintAI-portable.exe"
+          gh release upload "${{ github.event.inputs.tag || github.ref_name }}" \
+            "PaintAI-portable.exe" --clobber
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
