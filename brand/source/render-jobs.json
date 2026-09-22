@@ -1,0 +1,77 @@
+[
+  {
+    "input": "svg/paintai-icon-16.svg",
+    "output": "png/paintai-16.png",
+    "size": 16
+  },
+  {
+    "input": "svg/paintai-icon-16.svg",
+    "output": "png/paintai-24.png",
+    "size": 24
+  },
+  {
+    "input": "svg/paintai-icon.svg",
+    "output": "png/paintai-32.png",
+    "size": 32
+  },
+  {
+    "input": "svg/paintai-icon.svg",
+    "output": "png/paintai-48.png",
+    "size": 48
+  },
+  {
+    "input": "svg/paintai-icon.svg",
+    "output": "png/paintai-64.png",
+    "size": 64
+  },
+  {
+    "input": "svg/paintai-icon.svg",
+    "output": "png/paintai-128.png",
+    "size": 128
+  },
+  {
+    "input": "svg/paintai-icon.svg",
+    "output": "png/paintai-256.png",
+    "size": 256
+  },
+  {
+    "input": "svg/paintai-icon.svg",
+    "output": "png/paintai-512.png",
+    "size": 512
+  },
+  {
+    "input": "svg/paintai-icon.svg",
+    "output": "png/paintai-1024.png",
+    "size": 1024
+  },
+  {
+    "input": "svg/paintai-icon.svg",
+    "output": "src-tauri/icons/32x32.png",
+    "size": 32
+  },
+  {
+    "input": "svg/paintai-icon.svg",
+    "output": "src-tauri/icons/128x128.png",
+    "size": 128
+  },
+  {
+    "input": "svg/paintai-icon.svg",
+    "output": "src-tauri/icons/128x128@2x.png",
+    "size": 256
+  },
+  {
+    "input": "svg/paintai-icon.svg",
+    "output": "src-tauri/icons/icon.png",
+    "size": 512
+  },
+  {
+    "input": "svg/paintai-silhouette.svg",
+    "output": "png/paintai-silhouette.png",
+    "size": 256
+  },
+  {
+    "input": "svg/paintai-icon-dark.svg",
+    "output": "png/paintai-dark.png",
+    "size": 256
+  }
+]
