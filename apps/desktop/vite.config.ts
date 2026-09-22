@@ -8,6 +8,12 @@ const host = process.env.TAURI_DEV_HOST
 export default defineConfig(() => ({
   plugins: [react()],
 
+  // Excalidraw reads process.env.IS_PREACT at runtime. Vite does not shim
+  // process, so without this the bundle throws on first render.
+  define: {
+    'process.env.IS_PREACT': JSON.stringify('false'),
+  },
+
   // Vite options tailored for Tauri development and only applied in `tauri dev` or `tauri build`
   //
   // 1. prevent Vite from obscuring rust errors

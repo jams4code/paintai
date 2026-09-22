@@ -14,7 +14,11 @@
       {
         "title": "PaintAI",
         "width": 1280,
-        "height": 820
+        "height": 820,
+        "decorations": false,
+        "minWidth": 640,
+        "minHeight": 480,
+        "dragDropEnabled": false
       }
     ],
     "security": {
