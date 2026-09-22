@@ -1,0 +1,9 @@
+# Default owner for everything.
+*                       @jams4code
+
+# The domain core and the agent surface set the contracts everything else
+# depends on. These always get a maintainer review.
+/packages/scene-ops/    @jams4code
+/packages/protocol/     @jams4code
+/.github/               @jams4code
+/SECURITY.md            @jams4code

@@ -1,0 +1,69 @@
+name: Feature request
+description: Propose something PaintAI should do
+labels: ['enhancement', 'needs triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Read the **non-goals** in [CONTRIBUTING.md](../../blob/main/CONTRIBUTING.md)
+        first. Pixel editing, image generation, and cloud features are refused on
+        purpose, and the reasoning is in [PLAN.md](../../blob/main/PLAN.md).
+
+        Arguing that a non-goal is wrong is welcome. Proposing one as if it were
+        an oversight is not, and will be closed with a link back here.
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: |
+        What are you actually trying to do, and what stops you today? Describe
+        the situation, not the solution. Most good features come out of a
+        problem nobody had written down yet.
+      placeholder: |
+        When I annotate a screenshot for a client I have to blur the account
+        number by hand every time, and I get it slightly wrong.
+    validations:
+      required: true
+
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you think should happen
+    validations:
+      required: true
+
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: What you tried instead
+      description: Other tools, workarounds, or approaches, and why they fall short.
+
+  - type: dropdown
+    id: phase
+    attributes:
+      label: Which phase does this belong to
+      description: Best guess. See PLAN.md. "Not sure" is a fine answer.
+      options:
+        - Not sure
+        - Phase 1 - canvas, image, draw, export
+        - Phase 2 - scene-ops domain core
+        - Phase 3 - MCP server
+        - Phase 4 - in-app prompt bar
+        - Phase 5 - icons and layout intelligence
+        - Phase 6 - crop, redact, scaled export
+        - Later than all of these
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I read the non-goals and this is not one of them, or I am explicitly arguing one should change
+          required: true
+        - label: I searched existing issues and discussions
+          required: true
+        - label: I would be willing to work on this
+          required: false

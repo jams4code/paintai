@@ -1,0 +1,90 @@
+name: Bug report
+description: Something behaves differently than it should
+labels: ['bug', 'needs triage']
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Before filing: PaintAI is in Phase 0. Most of the feature list in the
+        README does not exist yet, so "the canvas does nothing" is expected
+        rather than a bug. Check [PLAN.md](../../blob/main/PLAN.md) for what is
+        actually built.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What you did, and what the app did back.
+      placeholder: |
+        I pasted a screenshot with Ctrl+V and the window went blank.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected instead
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: |
+        Numbered, from a fresh launch. If it only happens sometimes, say how
+        often and what seems to trigger it. An intermittent bug described
+        honestly is far more useful than a clean one that does not reproduce.
+      placeholder: |
+        1. Launch PaintAI
+        2. Paste a PNG from the clipboard
+        3. Draw one arrow
+        4. Window goes blank
+    validations:
+      required: true
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: Operating system
+      options:
+        - Windows 11
+        - Windows 10
+        - macOS
+        - Linux
+    validations:
+      required: true
+
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+      description: The release version, or `git rev-parse --short HEAD` if you built it.
+      placeholder: v0.1.0 or a1b2c3d
+    validations:
+      required: true
+
+  - type: textarea
+    id: install-method
+    attributes:
+      label: How you installed it
+      description: Installer, portable exe, or built from source. If built from source, paste the output of `rustc --version` and `node --version`.
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs, errors, screenshots
+      description: |
+        Anything from the console counts. Drag images straight into this box.
+        Scrub credentials and client data first.
+      render: shell
+
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: Before submitting
+      options:
+        - label: I searched existing issues and this is not a duplicate
+          required: true
+        - label: This is not a security vulnerability (those go to the private advisory form)
+          required: true
