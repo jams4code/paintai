@@ -1,0 +1,7 @@
+node_modules/
+dist/
+target/
+pnpm-lock.yaml
+brand/
+apps/desktop/src-tauri/gen/
+CODE_OF_CONDUCT.md
