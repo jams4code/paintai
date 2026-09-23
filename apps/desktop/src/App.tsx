@@ -4,6 +4,7 @@ import type { ExcalidrawImperativeAPI } from '@excalidraw/excalidraw/types'
 import '@excalidraw/excalidraw/index.css'
 
 import { TitleBar } from './components/TitleBar'
+import { ChatPanel } from './components/ChatPanel'
 import { imageMimeType, pickImagesToOpen, readFile, toDataURL } from './lib/files'
 import { insertImage } from './lib/image-insert'
 import { copyToClipboard, exportPNG, type ExportScale } from './lib/export'
@@ -21,6 +22,7 @@ export default function App() {
   const [dirty, setDirty] = useState(false)
   const [scale, setScale] = useState<ExportScale>(2)
   const [style, setStyle] = useState<StyleName>('precise')
+  const [chatOpen, setChatOpen] = useState(false)
   const [status, setStatus] = useState<{ text: string; error: boolean } | null>(null)
 
   const say = useCallback((text: string, error = false) => {
@@ -181,7 +183,9 @@ export default function App() {
                 ? doExport
                 : key === 'i'
                   ? doOpenImage
-                  : null
+                  : key === 'j'
+                    ? () => setChatOpen((open) => !open)
+                    : null
 
       if (!action) return
       event.preventDefault()
@@ -221,6 +225,8 @@ export default function App() {
         onScaleChange={setScale}
         style={style}
         onStyleChange={applyStyle}
+        chatOpen={chatOpen}
+        onToggleChat={() => setChatOpen((open) => !open)}
         onOpenImage={doOpenImage}
         onOpenScene={doOpenScene}
         onSave={doSave}
@@ -228,18 +234,22 @@ export default function App() {
         onCopy={doCopy}
       />
 
-      <div className="canvas">
-        <Excalidraw
-          excalidrawAPI={(api) => {
-            apiRef.current = api
-          }}
-          onChange={() => {
-            if (!dirty) setDirty(true)
-          }}
-          initialData={{
-            appState: { viewBackgroundColor: '#ffffff', ...STYLES.precise.appState },
-          }}
-        />
+      <div className="workspace">
+        <div className="canvas">
+          <Excalidraw
+            excalidrawAPI={(api) => {
+              apiRef.current = api
+            }}
+            onChange={() => {
+              if (!dirty) setDirty(true)
+            }}
+            initialData={{
+              appState: { viewBackgroundColor: '#ffffff', ...STYLES.precise.appState },
+            }}
+          />
+        </div>
+
+        <ChatPanel open={chatOpen} onClose={() => setChatOpen(false)} />
       </div>
 
       {status && (

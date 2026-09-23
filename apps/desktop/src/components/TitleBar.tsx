@@ -18,6 +18,8 @@ interface Props {
   onScaleChange: (scale: ExportScale) => void
   style: StyleName
   onStyleChange: (style: StyleName) => void
+  chatOpen: boolean
+  onToggleChat: () => void
   onOpenImage: () => void
   onOpenScene: () => void
   onSave: () => void
@@ -122,6 +124,15 @@ export function TitleBar(props: Props) {
         </button>
         <button className="primary" onClick={props.onCopy} title="Copy to clipboard (Ctrl+Shift+C)">
           Copy
+        </button>
+        <span className="titlebar-sep" />
+        <button
+          className={props.chatOpen ? 'agent active' : 'agent'}
+          onClick={props.onToggleChat}
+          aria-pressed={props.chatOpen}
+          title="Talk to your coding agent about this canvas (Ctrl+J)"
+        >
+          Agent
         </button>
       </div>
 
