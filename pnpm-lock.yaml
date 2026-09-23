@@ -76,6 +76,18 @@ importers:
         specifier: ^8.0.16
         version: 8.3.0
 
+  packages/protocol:
+    dependencies:
+      zod:
+        specifier: ^3.24.1
+        version: 3.25.76
+
+  packages/scene-ops:
+    dependencies:
+      '@paintai/protocol':
+        specifier: workspace:*
+        version: link:../protocol
+
 packages:
 
   '@antfu/install-pkg@2.1.0':
@@ -1993,6 +2005,9 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
 
+  zod@3.25.76:
+    resolution: {integrity: sha512-gzUt/qt81nXsFGKIFcC3YnfEAx5NkunCfnDlvuBSSFS02bcXu4Lmea0AFIUwbLWxWPx3d9p8S5QoaujKcNQxcQ==}
+
   zustand@4.5.7:
     resolution: {integrity: sha512-CHOUy7mu3lbD6o6LJLfllpjkzhHXSBlX8B9+qPddUsIfeF5S/UZ5q0kmCsnRqT1UHFQZchNFDDzMbQsuesHWlw==}
     engines: {node: '>=12.7.0'}
@@ -3827,6 +3842,8 @@ snapshots:
   word-wrap@1.2.5: {}
 
   yocto-queue@0.1.0: {}
+
+  zod@3.25.76: {}
 
   zustand@4.5.7(@types/react@19.3.0)(react@19.3.0):
     dependencies:

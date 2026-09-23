@@ -22,7 +22,7 @@
     "format:check": "prettier --check .",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
-    "typecheck": "pnpm --filter paintai-desktop exec tsc --noEmit",
+    "typecheck": "pnpm -r --filter=./packages/* exec tsc --noEmit && pnpm --filter paintai-desktop exec tsc --noEmit",
     "test": "vitest run --passWithNoTests",
     "test:watch": "vitest",
     "rust:fmt": "cargo fmt --manifest-path apps/desktop/src-tauri/Cargo.toml --all --check",
