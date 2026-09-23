@@ -68,6 +68,41 @@ fn write_file(path: String, contents: Vec<u8>) -> Result<(), String> {
     std::fs::write(parent.join(name), contents).map_err(|e| format!("cannot write file: {e}"))
 }
 
+/// Smallest window that still gets Excalidraw's desktop UI.
+///
+/// Excalidraw drops to its phone layout at `max-width: 730px` OR
+/// `max-height: 500px`, measured in CSS pixels. On a 175% display a window that
+/// looks large in device pixels can be well under both, and the app silently
+/// renders a mobile toolbar inside a desktop window. These are logical units,
+/// which are CSS pixels, so the guard holds at any scale factor. The height
+/// leaves room for the custom titlebar on top of Excalidraw's 500.
+const MIN_WIDTH: f64 = 780.0;
+const MIN_HEIGHT: f64 = 600.0;
+
+/// Size the window from the monitor rather than hardcoding pixels.
+///
+/// A fixed 1280x820 is three different windows on three different displays once
+/// scaling is involved. Working in logical units and taking a share of the
+/// actual monitor gives a sensible window everywhere, and the clamp keeps it
+/// above Excalidraw's mobile breakpoint without ever exceeding the screen.
+fn size_to_monitor(window: &tauri::WebviewWindow) {
+    let Ok(Some(monitor)) = window.primary_monitor() else {
+        return;
+    };
+
+    let screen = monitor.size().to_logical::<f64>(monitor.scale_factor());
+
+    let width = (screen.width * 0.85)
+        .clamp(MIN_WIDTH, 1440.0)
+        .min(screen.width);
+    let height = (screen.height * 0.90)
+        .clamp(MIN_HEIGHT, 1000.0)
+        .min(screen.height);
+
+    let _ = window.set_size(tauri::LogicalSize::new(width, height));
+    let _ = window.center();
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
@@ -75,6 +110,14 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .invoke_handler(tauri::generate_handler![read_file, write_file])
+        .setup(|app| {
+            use tauri::Manager;
+            if let Some(window) = app.get_webview_window("main") {
+                let _ = window.set_min_size(Some(tauri::LogicalSize::new(MIN_WIDTH, MIN_HEIGHT)));
+                size_to_monitor(&window);
+            }
+            Ok(())
+        })
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }

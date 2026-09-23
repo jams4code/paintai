@@ -13,11 +13,11 @@
     "windows": [
       {
         "title": "PaintAI",
-        "width": 1280,
-        "height": 820,
+        "width": 1200,
+        "height": 800,
         "decorations": false,
-        "minWidth": 640,
-        "minHeight": 480,
+        "minWidth": 780,
+        "minHeight": 600,
         "dragDropEnabled": false
       }
     ],
