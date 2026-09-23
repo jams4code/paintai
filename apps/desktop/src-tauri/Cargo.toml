@@ -27,6 +27,7 @@ tauri-plugin-clipboard-manager = "2.3.3"
 axum = { version = "0.8.9", default-features = false, features = ["http1", "json", "tokio"] }
 tokio = { version = "1.53.1", features = ["rt-multi-thread", "sync", "time", "net"] }
 uuid = { version = "1.26.1", features = ["v4"] }
+tauri-plugin-shell = "2.3.6"
 
 
 # Read the optimization guideline for more details: https://tauri.app/concept/size/#cargo-configuration

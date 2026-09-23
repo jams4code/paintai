@@ -1,3 +1,4 @@
+mod agent;
 mod mcp;
 
 use std::path::{Path, PathBuf};
@@ -126,11 +127,15 @@ pub fn run() {
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_clipboard_manager::init())
+        .plugin(tauri_plugin_shell::init())
         .invoke_handler(tauri::generate_handler![
             read_file,
             write_file,
             mcp_respond,
-            mcp_port
+            mcp_port,
+            agent::agent_send,
+            agent::agent_stop,
+            agent::agent_available
         ])
         .setup(|app| {
             use tauri::Manager;
@@ -139,6 +144,8 @@ pub fn run() {
                 let _ = window.set_min_size(Some(tauri::LogicalSize::new(MIN_WIDTH, MIN_HEIGHT)));
                 size_to_monitor(&window);
             }
+
+            app.manage(agent::AgentState::default());
 
             let state = mcp::McpState::new(app.handle().clone());
             app.manage(state.clone());
