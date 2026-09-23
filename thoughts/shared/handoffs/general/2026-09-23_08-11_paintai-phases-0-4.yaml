@@ -1,0 +1,115 @@
+---
+session: general
+date: 2026-09-23
+status: partial
+outcome: PARTIAL_PLUS
+---
+
+goal: Built PaintAI phases 0-4 from nothing to a working agent-driven canvas, public on GitHub
+now: Verify the Phase 4 chat panel actually works end to end, it has never been run
+test: cd C:/dev/PaintAI && pnpm validate && pnpm dev
+
+done_this_session:
+  - task: Phase 0, toolchain and Tauri scaffold, brand assets wired
+    files: [apps/desktop/src-tauri/tauri.conf.json, brand/]
+  - task: Phase 1, canvas with image paste/drop/open, draw, export PNG, clipboard, scene save/open, frameless titlebar
+    files:
+      [
+        apps/desktop/src/App.tsx,
+        apps/desktop/src/components/TitleBar.tsx,
+        apps/desktop/src/lib/files.ts,
+        apps/desktop/src/lib/export.ts,
+        apps/desktop/src/lib/scene-io.ts,
+        apps/desktop/src/lib/placement.ts,
+      ]
+  - task: Precise/Sketch style system after user complained shapes looked sloppy
+    files: [apps/desktop/src/lib/style.ts]
+  - task: Phase 2, scene-ops domain core and protocol schemas, 57 tests
+    files: [packages/scene-ops/src/, packages/protocol/src/index.ts]
+  - task: Phase 3, MCP server in Rust (hand-rolled JSON-RPC over axum) plus renderer bridge, 8 tools
+    files: [apps/desktop/src-tauri/src/mcp.rs, apps/desktop/src/lib/mcp-bridge.ts]
+  - task: Claude Code skill and agent setup docs
+    files: [skills/paintai/SKILL.md, docs/agents.md]
+  - task: Phase 4 code, agent subprocess spawn plus chat panel UI, NOT YET RUN
+    files: [apps/desktop/src-tauri/src/agent.rs, apps/desktop/src/lib/agent.ts, apps/desktop/src/components/ChatPanel.tsx]
+  - task: Public repo with CI, CodeQL, gitleaks, Dependabot, branch protection, v0.1.0 release with Windows installers
+    files: [.github/workflows/, README.md, SECURITY.md, CONTRIBUTING.md]
+
+blockers: []
+
+questions:
+  - Does the chat panel actually stream Claude Code output? Written and type-checked, never executed.
+  - resolveImagePlacement policy still unresolved by the owner. Currently fit-viewport + keep existing + locked. See the doc comment in apps/desktop/src/lib/placement.ts for the three options.
+  - GoPark decision review is 14 days overdue in the decision log, unrelated to PaintAI but still open.
+
+decisions:
+  - depend_not_fork_excalidraw: A fork means permanent merge tax against an active repo for internals we never touch. Consumed as an npm dependency instead.
+  - hand_rolled_mcp_jsonrpc: The subset MCP needs is ~200 lines. Auditable in one sitting, which is what SECURITY.md promises about the one port opened, and no crate API to track.
+  - explicit_rust_fs_commands: Dropped tauri-plugin-fs. Two commands that canonicalise, reject non-regular files and size-cap are smaller and easier to audit than widening a plugin scope.
+  - scene_ops_emits_skeletons_not_elements: Keeps the package pure and testable in plain Node. The DOM-dependent convertToExcalidrawElements call stays in the app.
+  - spawn_cli_for_chat_panel: MCP is client-initiated so a server cannot push work to a session. Spawning the user's own CLI is the only arrangement where the panel genuinely instructs the agent.
+  - personal_open_source_mit: Settled. Not a JADEV product, no paid tier, no open core split.
+  - silhouette_is_a_P_not_a_paperclip: Deliberate. The P is ownable, a paperclip is Microsoft's equity. Stop iterating on it.
+
+findings:
+  - upstream_covers_bindings: convertToExcalidrawElements already handles bound labels (ValidContainer) and arrow bindings (ValidLinearElement). scene-ops wraps it rather than reimplementing. PLAN.md section 3 overstated what was missing.
+  - bindings_and_geometry_are_separate: An arrow with correct startBinding/endBinding still renders as a default horizontal stub unless points are supplied. Fixed in hydrate.ts by routing centre-to-centre.
+  - agent_elements_ignored_canvas_style: appState.currentItem* only applies to shapes a human draws. convertToExcalidrawElements uses its own defaults, so agents drew in Sketch while the user was in Precise. Fixed via HydrateOptions.defaults.
+  - bound_labels_need_their_own_font: A container's fontFamily never reaches the text child upstream creates from `label`. Threaded through labelStyle() in hydrate.ts.
+  - delete_must_cascade: get_scene folds bound labels into their parent, so an agent never sees the label id and deleting a shape orphaned its caption. Fixed in mcp-bridge delete_elements.
+  - printwindow_lies_about_webview2: WebView2 composites out-of-process. PrintWindow screenshots showed a broken layout that was not real. Chrome at localhost:1420 with a __TAURI_INTERNALS__ stub is the reliable way to inspect.
+  - excalidraw_mobile_breakpoint: Switches to phone UI at max-width 730px OR max-height 500px in CSS pixels. On a scaled display a large-looking window can be under both. Window is now sized from the monitor in logical units.
+  - vite_caches_workspace_packages: Changes to packages/* were served stale. Must rm -rf apps/desktop/node_modules/.vite and restart, HMR does not pick them up.
+  - workflow_scope_vs_ssh: The gh OAuth token lacks `workflow` scope so pushing .github/workflows over HTTPS is rejected. Pushing over SSH works and his git protocol is already ssh.
+
+worked:
+  - Rendering the canvas through render_scene and actually looking at the PNG. Found three bugs no test caught.
+  - Chrome devtools MCP against the Vite dev server with a Tauri stub, for real computed styles.
+  - Committing in small labelled batches and pushing after each phase.
+  - Probing the MCP server with curl before wiring any UI to it.
+
+failed:
+  - PrintWindow screenshots of the Tauri window. Sent me chasing a CSS overflow bug that did not exist, cost several rounds.
+  - Assuming HMR picked up workspace package changes. Two rounds of "the fix did not work" were actually stale bundles.
+  - Trusting `cmd | tail` exit codes. A release build reported success while dying on a full disk.
+
+next:
+  - Run pnpm dev, open the Agent panel with Ctrl+J, send "what is on the canvas?" and confirm streaming, tool chips and Stop all work.
+  - Check that stream-json parsing in apps/desktop/src/lib/agent.ts matches what Claude Code 2.1.267 actually emits. The shapes were inferred, not observed.
+  - Make the chat panel width draggable. Currently fixed at 340px.
+  - Phase 5, packages/icons with a Lucide subset and a place_icon MCP tool, plus arrange exposed in the UI right-click menu.
+  - Phase 6, crop and redact-blur in TypeScript via OffscreenCanvas. Verify redaction destroys pixels rather than covering them.
+  - Add required status checks for the two new CI jobs if job names changed.
+  - Cut v0.2.0 once the panel is verified. Release workflow builds Windows, macOS both arches, Linux.
+
+files:
+  created:
+    [
+      packages/protocol/src/index.ts,
+      packages/scene-ops/src/{types,validate,hydrate,query,layout,index}.ts,
+      packages/scene-ops/src/{validate,hydrate,query,layout}.test.ts,
+      apps/desktop/src-tauri/src/{mcp,agent}.rs,
+      apps/desktop/src/lib/{files,export,scene-io,placement,image-insert,style,mcp-bridge,agent}.ts,
+      apps/desktop/src/components/{TitleBar,ChatPanel}.tsx,
+      skills/paintai/SKILL.md,
+      docs/agents.md,
+    ]
+  modified:
+    [
+      PLAN.md,
+      README.md,
+      apps/desktop/src/App.tsx,
+      apps/desktop/src/App.css,
+      apps/desktop/src-tauri/src/lib.rs,
+      apps/desktop/src-tauri/tauri.conf.json,
+      apps/desktop/src-tauri/capabilities/default.json,
+    ]
+
+repo: https://github.com/jams4code/paintai
+release: https://github.com/jams4code/paintai/releases/tag/v0.1.0
+mcp_endpoint: http://127.0.0.1:7331/mcp
+commits_this_session: 19
+
+environment_warnings:
+  - Disk hit 115MB free twice. Tauri target/ reaches 5.3GB. User freed space, now ~20GB. Delete apps/desktop/src-tauri/target between long sessions.
+  - Only open Dependabot alert is rust/glib, medium, Linux-only, pinned by Tauri's GTK stack. Not fixable here.
