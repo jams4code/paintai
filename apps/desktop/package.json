@@ -11,6 +11,8 @@
   },
   "dependencies": {
     "@excalidraw/excalidraw": "^0.18.1",
+    "@paintai/protocol": "workspace:*",
+    "@paintai/scene-ops": "workspace:*",
     "@tauri-apps/api": "^2",
     "@tauri-apps/plugin-clipboard-manager": "^2.3.3",
     "@tauri-apps/plugin-dialog": "^2.7.3",

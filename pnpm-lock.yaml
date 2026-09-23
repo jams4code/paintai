@@ -35,6 +35,12 @@ importers:
       '@excalidraw/excalidraw':
         specifier: ^0.18.1
         version: 0.18.1(@types/react-dom@19.3.0(@types/react@19.3.0))(@types/react@19.3.0)(react-dom@19.3.0(react@19.3.0))(react@19.3.0)
+      '@paintai/protocol':
+        specifier: workspace:*
+        version: link:../../packages/protocol
+      '@paintai/scene-ops':
+        specifier: workspace:*
+        version: link:../../packages/scene-ops
       '@tauri-apps/api':
         specifier: ^2
         version: 2.11.1

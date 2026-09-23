@@ -9,6 +9,7 @@ import { insertImage } from './lib/image-insert'
 import { copyToClipboard, exportPNG, type ExportScale } from './lib/export'
 import { openScene, saveScene } from './lib/scene-io'
 import { restyleElements, STYLES, type StyleName } from './lib/style'
+import { startMcpBridge } from './lib/mcp-bridge'
 import './App.css'
 
 /** Toast lifetime. Long enough to read a path, short enough not to nag. */
@@ -148,6 +149,20 @@ export default function App() {
       window.removeEventListener('dragover', onDragOver, true)
     }
   }, [say])
+
+  /**
+   * MCP bridge.
+   *
+   * Registered once on mount. It reads the API through the ref rather than
+   * closing over it, so the listener is live before Excalidraw has handed the
+   * API over and does not need re-registering when it does.
+   */
+  useEffect(() => {
+    const pending = startMcpBridge(() => apiRef.current)
+    return () => {
+      pending.then((unlisten) => unlisten()).catch(() => {})
+    }
+  }, [])
 
   /** Shortcuts. Registered in capture so Excalidraw's own bindings do not win. */
   useEffect(() => {
