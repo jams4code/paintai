@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { getCurrentWindow } from '@tauri-apps/api/window'
 import type { ExportScale } from '../lib/export'
+import { STYLES, type StyleName } from '../lib/style'
 
 /**
  * The window is frameless, so this bar is both chrome and toolbar.
@@ -15,6 +16,8 @@ interface Props {
   dirty: boolean
   scale: ExportScale
   onScaleChange: (scale: ExportScale) => void
+  style: StyleName
+  onStyleChange: (style: StyleName) => void
   onOpenImage: () => void
   onOpenScene: () => void
   onSave: () => void
@@ -22,23 +25,30 @@ interface Props {
   onCopy: () => void
 }
 
-const win = getCurrentWindow()
+/**
+ * Resolved on first use, not at import time.
+ *
+ * `getCurrentWindow()` throws outside a Tauri webview, so calling it at module
+ * scope means importing this file crashes a plain browser or a test runner, and
+ * takes the whole React tree down with it. Lazy keeps the module importable
+ * anywhere.
+ */
+let cachedWindow: ReturnType<typeof getCurrentWindow> | null = null
+const win = () => (cachedWindow ??= getCurrentWindow())
 
 export function TitleBar(props: Props) {
   const [pinned, setPinned] = useState(false)
   const [maximized, setMaximized] = useState(false)
 
   useEffect(() => {
-    win
-      .isMaximized()
-      .then(setMaximized)
-      .catch(() => {})
-    const unlisten = win.onResized(() => {
-      win
+    const sync = () => {
+      win()
         .isMaximized()
         .then(setMaximized)
         .catch(() => {})
-    })
+    }
+    sync()
+    const unlisten = win().onResized(sync)
     return () => {
       unlisten.then((fn) => fn()).catch(() => {})
     }
@@ -46,7 +56,7 @@ export function TitleBar(props: Props) {
 
   async function togglePin() {
     const next = !pinned
-    await win.setAlwaysOnTop(next)
+    await win().setAlwaysOnTop(next)
     setPinned(next)
   }
 
@@ -67,6 +77,25 @@ export function TitleBar(props: Props) {
       </div>
 
       <div className="titlebar-actions">
+        {/* Style sits first because it changes how everything else looks. */}
+        <div className="titlebar-style" role="group" aria-label="Drawing style">
+          {(Object.keys(STYLES) as StyleName[]).map((name) => (
+            <button
+              key={name}
+              className={props.style === name ? 'active' : ''}
+              onClick={() => props.onStyleChange(name)}
+              aria-pressed={props.style === name}
+              title={
+                name === 'precise'
+                  ? 'Crisp geometry and a real sans. Restyles the whole canvas.'
+                  : 'Deliberate roughness, good for drafts. Restyles the whole canvas.'
+              }
+            >
+              {STYLES[name].label}
+            </button>
+          ))}
+        </div>
+        <span className="titlebar-sep" />
         <button onClick={props.onOpenImage} title="Place an image (Ctrl+I)">
           Image
         </button>
@@ -114,13 +143,13 @@ export function TitleBar(props: Props) {
             />
           </svg>
         </button>
-        <button onClick={() => win.minimize()} title="Minimise" aria-label="Minimise">
+        <button onClick={() => win().minimize()} title="Minimise" aria-label="Minimise">
           <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
             <path d="M3 8h10" stroke="currentColor" strokeWidth="1.2" />
           </svg>
         </button>
         <button
-          onClick={() => win.toggleMaximize()}
+          onClick={() => win().toggleMaximize()}
           title={maximized ? 'Restore' : 'Maximise'}
           aria-label={maximized ? 'Restore' : 'Maximise'}
         >
@@ -136,7 +165,7 @@ export function TitleBar(props: Props) {
             />
           </svg>
         </button>
-        <button className="close" onClick={() => win.close()} title="Close" aria-label="Close">
+        <button className="close" onClick={() => win().close()} title="Close" aria-label="Close">
           <svg width="14" height="14" viewBox="0 0 16 16" aria-hidden="true">
             <path d="M4 4l8 8M12 4l-8 8" stroke="currentColor" strokeWidth="1.2" />
           </svg>

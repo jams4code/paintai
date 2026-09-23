@@ -8,6 +8,7 @@ import { imageMimeType, pickImagesToOpen, readFile, toDataURL } from './lib/file
 import { insertImage } from './lib/image-insert'
 import { copyToClipboard, exportPNG, type ExportScale } from './lib/export'
 import { openScene, saveScene } from './lib/scene-io'
+import { restyleElements, STYLES, type StyleName } from './lib/style'
 import './App.css'
 
 /** Toast lifetime. Long enough to read a path, short enough not to nag. */
@@ -18,6 +19,7 @@ export default function App() {
   const [path, setPath] = useState<string | null>(null)
   const [dirty, setDirty] = useState(false)
   const [scale, setScale] = useState<ExportScale>(2)
+  const [style, setStyle] = useState<StyleName>('precise')
   const [status, setStatus] = useState<{ text: string; error: boolean } | null>(null)
 
   const say = useCallback((text: string, error = false) => {
@@ -176,6 +178,23 @@ export default function App() {
     return () => window.removeEventListener('keydown', onKey, true)
   }, [doCopy, doSave, doOpenScene, doExport, doOpenImage])
 
+  /**
+   * Switch drawing style, and restyle what is already on the canvas.
+   *
+   * Only changing future shapes would miss the point: the reason you reach for
+   * this is that the diagram in front of you came out looking wrong.
+   */
+  const applyStyle = useCallback((name: StyleName) => {
+    setStyle(name)
+    const api = apiRef.current
+    if (!api) return
+    api.updateScene({
+      elements: restyleElements(api.getSceneElements(), name),
+      appState: STYLES[name].appState,
+      captureUpdate: 'IMMEDIATELY' as never,
+    })
+  }, [])
+
   const fileName = path ? (path.split(/[\\/]/).pop() ?? 'untitled') : 'untitled'
 
   return (
@@ -185,6 +204,8 @@ export default function App() {
         dirty={dirty}
         scale={scale}
         onScaleChange={setScale}
+        style={style}
+        onStyleChange={applyStyle}
         onOpenImage={doOpenImage}
         onOpenScene={doOpenScene}
         onSave={doSave}
@@ -200,7 +221,9 @@ export default function App() {
           onChange={() => {
             if (!dirty) setDirty(true)
           }}
-          initialData={{ appState: { viewBackgroundColor: '#ffffff' } }}
+          initialData={{
+            appState: { viewBackgroundColor: '#ffffff', ...STYLES.precise.appState },
+          }}
         />
       </div>
 
