@@ -17,11 +17,11 @@ Copilot read the same canvas you are drawing on, and write to it.
 
 ---
 
-## Status: early. Phase 0 of 6.
+## Status: early. Phases 0 to 3 done.
 
-Read this before you get excited. Right now this repository contains a Tauri
-shell that compiles, a brand system, and a detailed plan. **The canvas is not
-wired up yet.** Nothing in the feature list below works today.
+The canvas works, and an agent can drive it. What is missing is the in-app chat
+panel, the icon library, and the crop/redact tools. Everything below that is
+marked done has been built and rendered, not just planned.
 
 It is public this early on purpose. The design decisions are written down in
 [PLAN.md](PLAN.md) and they are still cheap to argue with. If you think one of
@@ -31,10 +31,10 @@ built on top of it.
 | Phase | What                              | State   |
 | ----- | --------------------------------- | ------- |
 | 0     | Toolchain, scaffold, brand        | Done    |
-| 1     | Canvas, image paste, draw, export | Next    |
-| 2     | `scene-ops` domain core           | Planned |
-| 3     | MCP server                        | Planned |
-| 4     | In-app prompt bar                 | Planned |
+| 1     | Canvas, image paste, draw, export | Done    |
+| 2     | `scene-ops` domain core           | Done    |
+| 3     | MCP server and agent skill        | Done    |
+| 4     | In-app chat panel                 | Next    |
 | 5     | Icons and layout intelligence     | Planned |
 | 6     | Crop, redact, scaled export       | Planned |
 
@@ -152,6 +152,22 @@ These are refused on purpose. Please do not open PRs for them.
 - No image generation. No GPU dependency, no API keys, no per-call cost.
 - No realtime multiplayer, no cloud sync, no accounts, no telemetry.
 - No web build. This is a local desktop application.
+
+---
+
+## Connecting your agent
+
+With PaintAI open, one command:
+
+```bash
+claude mcp add --transport http paintai http://127.0.0.1:7331/mcp
+```
+
+Then ask it things like _"look at the canvas and build that as a React
+component"_ or _"add a login form mockup at 0,0"_.
+
+Copilot, the agent skill, the full tool list and the security notes are in
+[docs/agents.md](docs/agents.md).
 
 ---
 

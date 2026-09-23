@@ -3,7 +3,7 @@
 Local-first agent-driven canvas. Annotate real screenshots, build mockups, draw
 diagrams, and let a coding agent read and write the same canvas you are drawing on.
 
-Status: Phase 0 done. Public at https://github.com/jams4code/paintai
+Status: Phases 0-3 done. Public at https://github.com/jams4code/paintai
 Owner: Jamal Abdelkhalek
 Created: 2026-09-22
 Origin: Teams thread, "Maybe we should build PaintAI", 2026-09-22 14:39
