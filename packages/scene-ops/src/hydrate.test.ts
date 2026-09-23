@@ -39,8 +39,51 @@ describe('hydrate', () => {
     expect(arrow.start).toEqual({ id: 'a' })
     expect(arrow.end).toEqual({ id: 'b' })
     expect(arrow.label).toEqual({ text: 'submits' })
-    // Points and bindings together make upstream fight itself over placement.
-    expect(arrow.points).toBeUndefined()
+
+    // A binding says what the arrow attaches to. The points say where it is
+    // drawn. Both are required: without points the arrow keeps the default
+    // horizontal stub and renders nowhere near the shapes it connects.
+    // Centre of 'a' is (50, 25), centre of 'b' is (350, 25).
+    expect(arrow.x).toBe(50)
+    expect(arrow.y).toBe(25)
+    expect(arrow.points).toEqual([
+      [0, 0],
+      [300, 0],
+    ])
+  })
+
+  it('routes a bound arrow to an element already on the canvas', () => {
+    const result = validateSpecs([
+      { kind: 'box', id: 'a', x: 0, y: 0, w: 100, h: 50 },
+      { kind: 'arrow', from: { ref: 'a' }, to: { ref: 'existing' } },
+    ])
+    // 'existing' is not in the batch, so validation rejects it on its own.
+    expect(result.ok).toBe(false)
+  })
+
+  it('applies canvas style defaults, but never over an explicit spec value', () => {
+    const parsed = validateSpecs([
+      { kind: 'box', x: 0, y: 0, w: 10, h: 10 },
+      { kind: 'box', x: 0, y: 0, w: 10, h: 10, strokeWidth: 4 },
+    ])
+    if (!parsed.ok) throw new Error('expected success')
+
+    const out = hydrate(parsed.specs, { defaults: { roughness: 0, strokeWidth: 2 } })
+
+    expect(out[0].roughness).toBe(0)
+    expect(out[0].strokeWidth).toBe(2)
+    // The spec asked for 4 and must win over the canvas default.
+    expect(out[1].strokeWidth).toBe(4)
+  })
+
+  it('does not apply roughness or fonts to images, which are bitmaps', () => {
+    const parsed = validateSpecs([{ kind: 'image', fileId: 'f', x: 0, y: 0, w: 10, h: 10 }])
+    if (!parsed.ok) throw new Error('expected success')
+
+    const [image] = hydrate(parsed.specs, { defaults: { roughness: 2, fontFamily: 5 } })
+
+    expect(image).not.toHaveProperty('roughness')
+    expect(image).not.toHaveProperty('fontFamily')
   })
 
   it('resolves references declared after the arrow', () => {

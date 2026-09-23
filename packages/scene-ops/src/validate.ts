@@ -14,7 +14,12 @@ export type ValidationResult = { ok: true; specs: Spec[] } | { ok: false; errors
 /** Ids an arrow may point at. Only shapes and images are bindable. */
 const BINDABLE = new Set(['box', 'image'])
 
-export function validateSpecs(input: unknown): ValidationResult {
+/**
+ * @param knownIds ids already on the canvas. An arrow may bind to one of these
+ *   as well as to something created in the same batch, so an agent can connect
+ *   new work to what is already there without recreating it.
+ */
+export function validateSpecs(input: unknown, knownIds: Iterable<string> = []): ValidationResult {
   const parsed = SpecListSchema.safeParse(input)
 
   if (!parsed.success) {
@@ -32,16 +37,23 @@ export function validateSpecs(input: unknown): ValidationResult {
 
   // Duplicate ids silently overwrite each other during hydration, producing a
   // scene that is missing elements with no error anywhere.
-  const seen = new Set<string>()
+  const existing = new Set(knownIds)
+  const seen = new Set<string>(existing)
+  const declared = new Set<string>()
+
   for (const spec of specs) {
     if (!spec.id) continue
-    if (seen.has(spec.id)) errors.push(`duplicate id '${spec.id}'`)
+    if (declared.has(spec.id)) errors.push(`duplicate id '${spec.id}'`)
+    declared.add(spec.id)
     seen.add(spec.id)
   }
 
-  const bindable = new Set(
-    specs.filter((s) => s.id && BINDABLE.has(s.kind)).map((s) => s.id as string),
-  )
+  // Anything already on the canvas is assumed bindable. Its real type is not
+  // knowable here, and the renderer refuses the bind if it turns out not to be.
+  const bindable = new Set([
+    ...existing,
+    ...specs.filter((s) => s.id && BINDABLE.has(s.kind)).map((s) => s.id as string),
+  ])
 
   for (const spec of specs) {
     if (spec.kind !== 'arrow') continue

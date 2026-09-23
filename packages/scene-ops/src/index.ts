@@ -7,7 +7,7 @@
  */
 
 export { validateSpecs, type ValidationResult } from './validate'
-export { hydrate } from './hydrate'
+export { hydrate, type HydrateOptions } from './hydrate'
 export { toSceneElements, describeScene } from './query'
 export { arrange } from './layout'
 export { boundsOf, type RawElement, type Skeleton, type Move, type Rect } from './types'
