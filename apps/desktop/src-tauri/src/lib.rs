@@ -1,3 +1,5 @@
+mod mcp;
+
 use std::path::{Path, PathBuf};
 
 /// Largest file the renderer is allowed to pull in or write out.
@@ -103,19 +105,45 @@ fn size_to_monitor(window: &tauri::WebviewWindow) {
     let _ = window.center();
 }
 
+/// Renderer's reply to an MCP tool call.
+///
+/// The scene lives in the webview, so every tool round-trips through it. This
+/// is the return leg.
+#[tauri::command]
+fn mcp_respond(state: tauri::State<'_, mcp::McpState>, id: String, result: serde_json::Value) {
+    state.resolve(&id, result);
+}
+
+/// The loopback port the MCP server listens on, for the UI to display.
+#[tauri::command]
+fn mcp_port() -> u16 {
+    mcp::MCP_PORT
+}
+
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_opener::init())
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_clipboard_manager::init())
-        .invoke_handler(tauri::generate_handler![read_file, write_file])
+        .invoke_handler(tauri::generate_handler![
+            read_file,
+            write_file,
+            mcp_respond,
+            mcp_port
+        ])
         .setup(|app| {
             use tauri::Manager;
+
             if let Some(window) = app.get_webview_window("main") {
                 let _ = window.set_min_size(Some(tauri::LogicalSize::new(MIN_WIDTH, MIN_HEIGHT)));
                 size_to_monitor(&window);
             }
+
+            let state = mcp::McpState::new(app.handle().clone());
+            app.manage(state.clone());
+            mcp::serve(state);
+
             Ok(())
         })
         .run(tauri::generate_context!())
