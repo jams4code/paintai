@@ -1,6 +1,6 @@
 from pathlib import Path
 from PIL import Image,ImageDraw,ImageFont
-import struct, json, zipfile
+import struct, json
 R=Path(__file__).resolve().parents[1]; icons=R/'src-tauri/icons'
 # Per-size optical masters are embedded individually, 32px first (Tauri recommendation).
 order=[32,16,24,48,64,256]; blobs=[(R/f'png/paintai-{s}.png').read_bytes() for s in order]
@@ -42,11 +42,16 @@ d.text((905,814),'Face returns from 32px.',fill='#64716F',font=f(17))
 d.text((905,863),'8× pixel view',fill='#64716F',font=f(14))
 d.text((65,973),'CHARCOAL  #252B30      TEAL  #00B8A9      4-UNIT MASTER STROKE',fill='#64716F',font=f(14))
 im.save(R/'PaintAI-Vector-Preview.png')
-# Container and native pixel validation.
-assert Image.open(icons/'icon.ico').ico.sizes()=={(s,s) for s in order}
+# Container and native pixel validation. Explicit checks, not assert: python -O strips asserts.
+def check(ok,msg):
+ if not ok: raise SystemExit(f'Validation failed: {msg}')
+ico_sizes=Image.open(icons/'icon.ico').ico.sizes()
+check(ico_sizes=={(s,s) for s in order},f'icon.ico layers {sorted(ico_sizes)}')
 for s in [16,24,32,48,64,128,256,512,1024]:
- a=Image.open(R/f'png/paintai-{s}.png');assert a.mode=='RGBA' and a.size==(s,s)
- assert a.getbbox()
- border=a.getchannel("A"); assert max(border.crop((0,0,s,1)).getdata())<64 and max(border.crop((0,s-1,s,s)).getdata())<64
+ a=Image.open(R/f'png/paintai-{s}.png')
+ check(a.mode=='RGBA' and a.size==(s,s),f'paintai-{s}.png is {a.mode} {a.size}')
+ check(a.getbbox() is not None,f'paintai-{s}.png is empty')
+ border=a.getchannel("A")
+ check(max(border.crop((0,0,s,1)).getdata())<64 and max(border.crop((0,s-1,s,s)).getdata())<64,f'paintai-{s}.png touches the top or bottom edge')
 icns=Image.open(icons/'icon.icns');icns.load()
 print('Validated 9 RGBA sizes, 6 ICO layers, and ICNS decoding.')
