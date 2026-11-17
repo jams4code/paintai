@@ -4,3 +4,6 @@ target/
 *.local
 .DS_Store
 Thumbs.db
+
+# Local working notes, never committed
+thoughts/
